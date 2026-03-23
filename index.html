@@ -1182,11 +1182,11 @@
   </nav>
   <div class="page-content">
     <div class="page-header">
-      <h1>Sınavlar</h1>
+      <h1>Sınaqlar</h1>
       <p id="dashGreeting">Uğurlar!</p>
     </div>
     <div class="exams-grid" id="examsGrid">
-      <div class="empty-state" style="grid-column:1/-1">Hələ sınav əlavə edilməyib. Admin panel vasitəsilə əlavə edin.</div>
+      <div class="empty-state" style="grid-column:1/-1">Hələ imtahan əlavə edilməyib. Admin panel vasitəsilə əlavə edin.</div>
     </div>
   </div>
 </div>
@@ -1197,7 +1197,7 @@
 <div id="examPage" class="page">
   <div class="exam-header">
     <div class="exam-info">
-      <h2 id="examTitle">Sınav</h2>
+      <h2 id="examTitle">İmtahan</h2>
       <p id="examProgress">Sual 1 / ?</p>
     </div>
     <div class="exam-timer">
@@ -1216,7 +1216,7 @@
     <div class="exam-nav">
       <button class="btn-nav" id="btnPrev" onclick="prevQuestion()" style="visibility:hidden">← Əvvəlki</button>
       <button class="btn-nav" id="btnNext" onclick="nextQuestion()">Növbəti →</button>
-      <button class="btn-submit hidden" id="btnSubmit" onclick="submitExam()">✓ Sınavı Bitir</button>
+      <button class="btn-submit hidden" id="btnSubmit" onclick="submitExam()">✓ İmtahanı Bitir</button>
     </div>
   </div>
 </div>
@@ -1262,8 +1262,8 @@
 <div id="blockedPage" class="page">
   <div class="blocked-box">
     <div class="blocked-icon">🔒</div>
-    <h2>Sınav bloklanıb</h2>
-    <p>Bu sınava artıq bir dəfə qatılmısınız.<br>Yenidən cəhd etmək üçün admindən icazə alın.</p>
+    <h2>İmtahan bloklanıb</h2>
+    <p>Bu imtahana artıq bir dəfə qatılmısınız.<br>Yenidən cəhd etmək üçün admindən icazə alın.</p>
     <button class="btn-back-home" style="margin-top:28px" onclick="goHome()">Geri Qayıt</button>
   </div>
 </div>
@@ -1308,16 +1308,16 @@
       <button class="modal-close" onclick="closeAdminPanel()">✕</button>
     </div>
     <div class="tabs">
-      <button class="tab-btn active" onclick="switchTab('tabExams',this)">Sınavlar</button>
+      <button class="tab-btn active" onclick="switchTab('tabExams',this)">İmtahanlar</button>
       <button class="tab-btn" onclick="switchTab('tabResults',this)">Nəticələr</button>
     </div>
 
     <!-- TAB: EXAMS -->
     <div id="tabExams" class="tab-content active">
-      <div class="admin-section-title">Yeni Sınav Əlavə Et</div>
+      <div class="admin-section-title">Yeni İmtahan Əlavə Et</div>
       <div class="admin-form-grid">
         <div class="admin-form-group">
-          <label>Sınav Adı</label>
+          <label>İmtahan Adı</label>
           <input type="text" id="aName" placeholder="Kredit əməliyyatları">
         </div>
         <div class="admin-form-group">
@@ -1356,9 +1356,9 @@
         tf: <code style="color:#4ade80">type:"tf", q:"sual", ans:true</code> (true=Doğru)<br>
         text: <code style="color:#fbbf24">type:"text", q:"sual", ans:"cavab"</code> (harf fərqi yoxdur)
       </div>
-      <button class="btn-admin-add" onclick="addExam()">+ Sınav Əlavə Et</button>
+      <button class="btn-admin-add" onclick="addExam()">+ İmtahan Əlavə Et</button>
 
-      <div class="admin-section-title" style="margin-top:28px">Mövcud Sınavlar</div>
+      <div class="admin-section-title" style="margin-top:28px">Mövcud İmtahanlar</div>
       <div id="adminExamsList" class="admin-exams-list"></div>
     </div>
 
@@ -1366,7 +1366,7 @@
     <div id="tabResults" class="tab-content">
       <div class="admin-section-title">Nəticələrə Bax</div>
       <select class="exam-select-admin" id="resultsExamSelect" onchange="loadAdminResults()">
-        <option value="">— Sınav seçin —</option>
+        <option value="">— İmtahan seçin —</option>
       </select>
       <div class="results-table-wrap">
         <table class="results-table" id="adminResultsTable">
@@ -1547,7 +1547,7 @@ function renderDashboard() {
   const grid = document.getElementById('examsGrid');
 
   if (!exams.length) {
-    grid.innerHTML = '<div class="empty-state" style="grid-column:1/-1">Hələ sınav əlavə edilməyib.</div>';
+    grid.innerHTML = '<div class="empty-state" style="grid-column:1/-1">Hələ imtahan əlavə edilməyib.</div>';
     return;
   }
 
@@ -1570,7 +1570,7 @@ function renderDashboard() {
         <button class="btn-stats" onclick="openLeaderboard('${exam.id}')">📊 İstatistika</button>
         ${done
           ? `<button class="btn-start completed" disabled>🔒 Tamamlandı</button>`
-          : `<button class="btn-start" onclick="startExam('${exam.id}')">▶ Sınava Başla</button>`
+          : `<button class="btn-start" onclick="startExam('${exam.id}')">▶ İmtahana Başla</button>`
         }
       </div>
     </div>`;
@@ -1834,8 +1834,8 @@ async function submitExam() {
   document.getElementById('resultTitle').textContent = currentExam.name;
   document.getElementById('resultSubtitle').textContent = `${currentUser} · ${questions.length} sual · Keçmə notu: ${currentExam.pass}%`;
   document.getElementById('resultPassFail').innerHTML = passed
-    ? `<div class="result-pass">✅ Sınavdan keçdiniz!</div>`
-    : `<div class="result-fail">❌ Keçmə notu tutmadı.</div>`;
+    ? `<div class="result-pass">✅ İmtahandan uğurla keçdiniz!</div>`
+    : `<div class="result-fail">❌ İmtahandan keçə bilmədiniz.</div>`;
   document.getElementById('resultIcon').textContent = passed ? '🏆' : '📋';
 
   // mini leaderboard on results
@@ -1919,7 +1919,7 @@ async function addExam() {
   const id = 'exam_' + Date.now();
   exams.push({ id, name, emoji, qcount, time, pass, diff, questions });
 
-  showLoading('Sınav saxlanılır...');
+  showLoading('İmtahan saxlanılır...');
   try {
     await fbSaveExams();
   } catch(e) {
@@ -1937,11 +1937,11 @@ async function addExam() {
     document.getElementById(id).value = '';
   });
   document.getElementById('aDiff').value = 'medium';
-  alert(`✅ "${name}" sınavı əlavə edildi!`);
+  alert(`✅ "${name}" imtahanı əlavə edildi!`);
 }
 
 async function deleteExam(examId) {
-  if (!confirm('Bu sınavı silmək istədiyinizə əminsiniz?')) return;
+  if (!confirm('Bu imtahanı silmək istədiyinizə əminsiniz?')) return;
   exams = exams.filter(e => e.id !== examId);
 
   // delete all results for this exam
@@ -1966,7 +1966,7 @@ async function deleteExam(examId) {
 function renderAdminExamsList() {
   const el = document.getElementById('adminExamsList');
   if (!exams.length) {
-    el.innerHTML = '<div style="color:var(--gray-600);font-size:13px">Hələ sınav yoxdur.</div>';
+    el.innerHTML = '<div style="color:var(--gray-600);font-size:13px">Hələ imtahan yoxdur.</div>';
     return;
   }
   el.innerHTML = exams.map(e => `
@@ -1982,7 +1982,7 @@ function renderAdminExamsList() {
 
 function renderResultsExamSelect() {
   const sel = document.getElementById('resultsExamSelect');
-  sel.innerHTML = '<option value="">— Sınav seçin —</option>' +
+  sel.innerHTML = '<option value="">— İmtahanı seçin —</option>' +
     exams.map(e => `<option value="${e.id}">${e.emoji} ${e.name}</option>`).join('');
   document.getElementById('adminResultsBody').innerHTML = '';
 }
