@@ -1754,7 +1754,7 @@ function renderDashboard() {
       <div class="card-actions">
         <button class="btn-stats" onclick="openLeaderboard('${exam.id}')">📊 Reytinq cədvəli</button>
         ${done
-          ? `<button class="btn-start completed" disabled>🔒 Tamamlandı</button>`
+          ? `<button class="btn-start" onclick="startExam('${exam.id}')">🔄 Yenidən</button>`
           : `<button class="btn-start" onclick="startExam('${exam.id}')">▶ İmtahana Başla</button>`
         }
       </div>
@@ -1798,10 +1798,7 @@ function startExam(examId) {
   const exam = exams.find(e => e.id === examId);
   if (!exam) return;
 
-  if (results[examId] && results[examId][currentUser]) {
-    showPage('blockedPage');
-    return;
-  }
+// sonsuz cəhd — ilk nəticə qorunur
 
   currentExam = exam;
   currentQIdx = 0;
@@ -2000,11 +1997,14 @@ async function submitExam() {
   };
   showLoading('Nəticə saxlanılır...');
   try {
-    await fbSaveResult(currentExam.id, currentUser, {
-      score, correct, wrong, time: elapsed,
-      date: new Date().toLocaleString('az-AZ'),
-      answers: answerLog
-    });
+    const alreadyHasResult = results[currentExam.id] && results[currentExam.id][currentUser];
+    if (!alreadyHasResult) {
+      await fbSaveResult(currentExam.id, currentUser, {
+        score, correct, wrong, time: elapsed,
+        date: new Date().toLocaleString('az-AZ'),
+        answers: answerLog
+      });
+    }
   } catch(e) {
     console.error('Save error:', e);
   } finally {
