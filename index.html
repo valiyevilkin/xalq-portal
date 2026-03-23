@@ -80,7 +80,7 @@
     0%, 100% { opacity: 0.7; }
     50%       { opacity: 1; }
   }
-  
+
   .login-box {
     background: rgba(255,255,255,0.04);
     border: 1px solid rgba(255,255,255,0.08);
@@ -1136,6 +1136,108 @@
 
   .admin-pin-input:focus { border-color: var(--red); }
 
+  /* ─── LIGHT MODE ──────────────────────────── */
+  body.light {
+    --black: #F5F5F5;
+    --gray-900: #FFFFFF;
+    --gray-800: #F0F0F0;
+    --gray-700: #E0E0E0;
+    --gray-600: #999999;
+    --gray-400: #666666;
+    --gray-200: #333333;
+    --gray-100: #1A1A1A;
+    --white: #111111;
+  }
+
+  body.light #loginPage {
+    background:
+      radial-gradient(ellipse 80% 60% at 50% -10%, rgba(200,16,46,0.15) 0%, transparent 70%),
+      #F5F5F5;
+  }
+
+  body.light #loginPage::before {
+    background-image:
+      repeating-linear-gradient(0deg, transparent, transparent 39px, rgba(0,0,0,0.04) 39px, rgba(0,0,0,0.04) 40px),
+      repeating-linear-gradient(90deg, transparent, transparent 39px, rgba(0,0,0,0.04) 39px, rgba(0,0,0,0.04) 40px);
+  }
+
+  body.light .login-box {
+    background: rgba(255,255,255,0.85);
+    border-color: rgba(0,0,0,0.1);
+    box-shadow: 0 32px 80px rgba(0,0,0,0.12), 0 0 0 1px rgba(200,16,46,0.08);
+  }
+
+  body.light .form-group select,
+  body.light .form-group input {
+    background: rgba(0,0,0,0.04);
+    border-color: rgba(0,0,0,0.12);
+    color: #111;
+  }
+
+  body.light .form-group select option {
+    background: #fff;
+    color: #111;
+  }
+
+  /* ─── FOOTER ──────────────────────────────── */
+  .site-footer {
+    padding: 24px 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-top: 1px solid rgba(255,255,255,0.06);
+    margin-top: auto;
+    transition: border-color 0.3s;
+  }
+
+  body.light .site-footer {
+    border-top-color: rgba(0,0,0,0.08);
+  }
+
+  .footer-links {
+    display: flex;
+    gap: 24px;
+    flex-wrap: wrap;
+  }
+
+  .footer-link {
+    font-size: 12px;
+    color: var(--gray-600);
+    text-decoration: none;
+    transition: color 0.2s;
+    cursor: pointer;
+    background: none;
+    border: none;
+    font-family: 'Inter', sans-serif;
+    padding: 0;
+  }
+
+  .footer-link:hover { color: var(--red); }
+
+  .theme-toggle {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 50%;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 16px;
+    transition: all 0.2s;
+    flex-shrink: 0;
+  }
+
+  body.light .theme-toggle {
+    background: rgba(0,0,0,0.05);
+    border-color: rgba(0,0,0,0.1);
+  }
+
+  .theme-toggle:hover {
+    border-color: var(--red);
+    transform: scale(1.1);
+  }
   /* ─── RESPONSIVE ──────────────────────────── */
   @media (max-width: 600px) {
     .topbar { padding: 0 16px; }
