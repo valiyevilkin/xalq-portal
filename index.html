@@ -1866,7 +1866,7 @@ function renderAdminExamsList() {
       <div class="admin-exam-row-left">
         <span>${e.emoji}</span>
         <span>${e.name}</span>
-        <span style="color:var(--gray-600)">${e.questions.length} sual · ${e.time} dəq</span>
+        <span style="color:var(--gray-600)">${(e.questions||[]).length} sual · ${e.time} dəq</span>
       </div>
       <button class="btn-delete-exam" onclick="deleteExam('${e.id}')">Sil</button>
     </div>`).join('');
