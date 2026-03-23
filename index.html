@@ -1310,6 +1310,7 @@
         <div class="user-dot"></div>
         <span id="currentUserName">—</span>
       </div>
+      <button class="btn-ghost" onclick="openChangePin()" style="font-size:12px">🔑 PIN dəyiş</button>
       <button class="btn-logout" onclick="doLogout()">Çıxış</button>
     </div>
   </nav>
@@ -1419,6 +1420,34 @@
     </div>
     <div class="modal-body">
       <table class="leaderboard-table" id="lbTable"></table>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     PIN DEYİŞ MODAL
+═══════════════════════════════════════════ -->
+<div id="changePinModal" class="modal-overlay hidden" onclick="if(event.target===this) this.classList.add('hidden')">
+  <div class="modal-box" style="max-width:380px">
+    <div class="modal-header">
+      <h2>🔑 PIN Dəyiş</h2>
+      <button class="modal-close" onclick="document.getElementById('changePinModal').classList.add('hidden')">✕</button>
+    </div>
+    <div class="admin-login-form">
+      <div class="form-group">
+        <label>Cari PIN</label>
+        <input type="password" id="cpCurrent" class="admin-pin-input" placeholder="• • • •" maxlength="4" inputmode="numeric">
+      </div>
+      <div class="form-group">
+        <label>Yeni PIN</label>
+        <input type="password" id="cpNew" class="admin-pin-input" placeholder="• • • •" maxlength="4" inputmode="numeric">
+      </div>
+      <div class="form-group">
+        <label>Yeni PIN (təkrar)</label>
+        <input type="password" id="cpRepeat" class="admin-pin-input" placeholder="• • • •" maxlength="4" inputmode="numeric">
+      </div>
+      <button class="btn-primary" onclick="doChangePin()">Dəyiş</button>
+      <div class="login-error" id="changePinError"></div>
     </div>
   </div>
 </div>
@@ -1605,6 +1634,15 @@ async function fbSaveResult(examId, user, resultObj) {
   await setDoc(doc(db, 'results', `${examId}__${user}`), { examId, user, ...resultObj });
 }
 
+async function fbSavePins(pins) {
+  await setDoc(doc(db, 'data', 'pins'), pins);
+}
+
+async function fbLoadPins() {
+  const snap = await getDoc(doc(db, 'data', 'pins'));
+  return snap.exists() ? snap.data() : {};
+}
+
 async function fbDeleteResult(examId, user) {
   await deleteDoc(doc(db, 'results', `${examId}__${user}`));
 }
@@ -1636,7 +1674,14 @@ async function doLogin() {
 
   if (!name) { showErr(err, 'Zəhmət olmasa adınızı seçin.'); return; }
   if (!pin)  { showErr(err, 'PIN kodunu daxil edin.'); return; }
-  if (USERS[name] !== pin) { showErr(err, 'PIN kod yanlışdır.'); return; }
+
+  showLoading('Yoxlanılır...');
+  let savedPins = {};
+  try { savedPins = await fbLoadPins(); } catch(e) {}
+  hideLoading();
+
+  const correctPin = savedPins[name] || USERS[name];
+  if (correctPin !== pin) { showErr(err, 'PIN kod yanlışdır.'); return; }
 
   err.style.display = 'none';
   showLoading('Giriş edilir...');
@@ -2251,6 +2296,49 @@ window.selectTF = selectTF;
 window.loadAdminResults = loadAdminResults;
 window.toggleDetail = toggleDetail;
 window.deleteResult = deleteResult;
+
+// ─── PIN DEYİŞ ────────────────────────────────────────────────────────────────
+function openChangePin() {
+  document.getElementById('cpCurrent').value = '';
+  document.getElementById('cpNew').value = '';
+  document.getElementById('cpRepeat').value = '';
+  document.getElementById('changePinError').style.display = 'none';
+  document.getElementById('changePinModal').classList.remove('hidden');
+}
+
+async function doChangePin() {
+  const current = document.getElementById('cpCurrent').value.trim();
+  const newPin  = document.getElementById('cpNew').value.trim();
+  const repeat  = document.getElementById('cpRepeat').value.trim();
+  const err     = document.getElementById('changePinError');
+
+  if (!current || !newPin || !repeat) { showErr(err, 'Bütün sahələri doldurun.'); return; }
+  if (newPin.length !== 4 || !/^\d{4}$/.test(newPin)) { showErr(err, 'PIN 4 rəqəmli olmalıdır.'); return; }
+  if (newPin !== repeat) { showErr(err, 'Yeni PIN-lər uyğun gəlmir.'); return; }
+
+  showLoading('Yoxlanılır...');
+  let savedPins = {};
+  try { savedPins = await fbLoadPins(); } catch(e) {}
+  hideLoading();
+
+  const correctPin = savedPins[currentUser] || USERS[currentUser];
+  if (correctPin !== current) { showErr(err, 'Cari PIN yanlışdır.'); return; }
+  if (newPin === current) { showErr(err, 'Yeni PIN köhnə ilə eynidir.'); return; }
+
+  showLoading('Saxlanılır...');
+  try {
+    savedPins[currentUser] = newPin;
+    await fbSavePins(savedPins);
+    document.getElementById('changePinModal').classList.add('hidden');
+    alert('✅ PIN uğurla dəyişdirildi!');
+  } catch(e) {
+    showErr(err, 'Xəta baş verdi: ' + e.message);
+  } finally {
+    hideLoading();
+  }
+}
+window.openChangePin = openChangePin;
+window.doChangePin = doChangePin;
 window.toggleTheme = toggleTheme;
 </script>
 
