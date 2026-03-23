@@ -1780,7 +1780,7 @@ function openAdminLogin() {
 
 function doAdminLogin() {
   const pin = document.getElementById('adminPinInput').value.trim();
-  if (pin !== ADMIN_PIN) {
+  if (String(pin) !== String(ADMIN_PIN)) {
     showErr(document.getElementById('adminLoginError'), 'Yanlış PIN.');
     return;
   }
