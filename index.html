@@ -850,10 +850,6 @@
     max-height: 90vh;
   }
 
-  .admin-modal {
-    z-index: 9999;
-  }
-
   .tabs {
     display: flex;
     gap: 4px;
@@ -1395,9 +1391,24 @@
 </div>
 
 <!-- ═══════════════════════════════════════════
-     JAVASCRIPT
+     FIREBASE SDK
 ═══════════════════════════════════════════ -->
-<script>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getFirestore, doc, getDoc, setDoc, updateDoc, deleteDoc, collection, getDocs, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAwZ5w0K4xZXm4ByM9aUt946BnVCEETTSE",
+  authDomain: "xalqbank-portal.firebaseapp.com",
+  projectId: "xalqbank-portal",
+  storageBucket: "xalqbank-portal.firebasestorage.app",
+  messagingSenderId: "808919577755",
+  appId: "1:808919577755:web:40f1d7879969f8fc7d023e"
+};
+
+const app = initializeApp(firebaseConfig);
+const db  = getFirestore(app);
+
 // ─── DATA ─────────────────────────────────────────────────────────────────────
 const USERS = {
   'Elgiz':'6584','Yelena':'5100','Səbinə':'8533','Rəşad':'3026',
@@ -1409,7 +1420,7 @@ const ADMIN_PIN = '9999';
 // ─── STATE ────────────────────────────────────────────────────────────────────
 let currentUser = null;
 let exams = [];
-let results = {}; // { examId: { username: { score, correct, wrong, time, date, answers[] } } }
+let results = {};
 let currentExam = null;
 let currentQIdx = 0;
 let userAnswers = [];
@@ -1417,15 +1428,58 @@ let timerInterval = null;
 let secondsLeft = 0;
 let examStartTime = null;
 
-// ─── PERSIST ──────────────────────────────────────────────────────────────────
-function save() {
-  localStorage.setItem('xb_exams', JSON.stringify(exams));
-  localStorage.setItem('xb_results', JSON.stringify(results));
+// ─── LOADING UI ───────────────────────────────────────────────────────────────
+function showLoading(msg = 'Yüklənir...') {
+  let el = document.getElementById('globalLoader');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'globalLoader';
+    el.style.cssText = `position:fixed;inset:0;background:rgba(10,10,10,0.85);z-index:99999;
+      display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;
+      font-family:Inter,sans-serif;color:#888;font-size:14px;backdrop-filter:blur(4px)`;
+    el.innerHTML = `<div style="width:36px;height:36px;border:3px solid #333;border-top-color:#C8102E;
+      border-radius:50%;animation:spin 0.8s linear infinite"></div><span id="loaderMsg"></span>
+      <style>@keyframes spin{to{transform:rotate(360deg)}}</style>`;
+    document.body.appendChild(el);
+  }
+  document.getElementById('loaderMsg').textContent = msg;
+  el.style.display = 'flex';
 }
 
-function load() {
-  try { exams = JSON.parse(localStorage.getItem('xb_exams')) || []; } catch { exams = []; }
-  try { results = JSON.parse(localStorage.getItem('xb_results')) || {}; } catch { results = {}; }
+function hideLoading() {
+  const el = document.getElementById('globalLoader');
+  if (el) el.style.display = 'none';
+}
+
+// ─── FIREBASE HELPERS ─────────────────────────────────────────────────────────
+async function fbSaveExams() {
+  await setDoc(doc(db, 'data', 'exams'), { list: exams });
+}
+
+async function fbLoadExams() {
+  const snap = await getDoc(doc(db, 'data', 'exams'));
+  exams = snap.exists() ? (snap.data().list || []) : [];
+}
+
+async function fbSaveResult(examId, user, resultObj) {
+  await setDoc(doc(db, 'results', `${examId}__${user}`), { examId, user, ...resultObj });
+}
+
+async function fbDeleteResult(examId, user) {
+  await deleteDoc(doc(db, 'results', `${examId}__${user}`));
+}
+
+async function fbLoadResults() {
+  const snap = await getDocs(collection(db, 'results'));
+  results = {};
+  snap.forEach(d => {
+    const data = d.data();
+    if (!results[data.examId]) results[data.examId] = {};
+    results[data.examId][data.user] = {
+      score: data.score, correct: data.correct, wrong: data.wrong,
+      time: data.time, date: data.date, answers: data.answers || []
+    };
+  });
 }
 
 // ─── PAGES ────────────────────────────────────────────────────────────────────
@@ -1435,7 +1489,7 @@ function showPage(id) {
 }
 
 // ─── LOGIN ────────────────────────────────────────────────────────────────────
-function doLogin() {
+async function doLogin() {
   const name = document.getElementById('userSelect').value;
   const pin  = document.getElementById('pinInput').value.trim();
   const err  = document.getElementById('loginError');
@@ -1445,10 +1499,19 @@ function doLogin() {
   if (USERS[name] !== pin) { showErr(err, 'PIN kod yanlışdır.'); return; }
 
   err.style.display = 'none';
-  currentUser = name;
-  sessionStorage.setItem('xb_user', name);
-  renderDashboard();
-  showPage('dashboardPage');
+  showLoading('Giriş edilir...');
+  try {
+    await fbLoadExams();
+    await fbLoadResults();
+    currentUser = name;
+    sessionStorage.setItem('xb_user', name);
+    renderDashboard();
+    showPage('dashboardPage');
+  } catch(e) {
+    showErr(err, 'Bağlantı xətası. Yenidən cəhd edin.');
+  } finally {
+    hideLoading();
+  }
 }
 
 function doLogout() {
@@ -1460,8 +1523,14 @@ function doLogout() {
   showPage('loginPage');
 }
 
-function goHome() {
+async function goHome() {
   if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
+  showLoading('Yüklənir...');
+  try {
+    await fbLoadExams();
+    await fbLoadResults();
+  } catch(e) {}
+  hideLoading();
   renderDashboard();
   showPage('dashboardPage');
 }
@@ -1692,7 +1761,7 @@ function prevQuestion() {
   }
 }
 
-function submitExam() {
+async function submitExam() {
   clearInterval(timerInterval);
   const elapsed = Math.round((Date.now() - examStartTime) / 1000);
   const questions = currentExam.questions;
@@ -1737,14 +1806,25 @@ function submitExam() {
   const score = Math.round((correct / questions.length) * 100);
   const passed = score >= currentExam.pass;
 
-  // save
+  // save to Firebase
   if (!results[currentExam.id]) results[currentExam.id] = {};
   results[currentExam.id][currentUser] = {
     score, correct, wrong, time: elapsed,
     date: new Date().toLocaleString('az-AZ'),
     answers: answerLog
   };
-  save();
+  showLoading('Nəticə saxlanılır...');
+  try {
+    await fbSaveResult(currentExam.id, currentUser, {
+      score, correct, wrong, time: elapsed,
+      date: new Date().toLocaleString('az-AZ'),
+      answers: answerLog
+    });
+  } catch(e) {
+    console.error('Save error:', e);
+  } finally {
+    hideLoading();
+  }
 
   // render results
   document.getElementById('resScore').textContent   = score + '%';
@@ -1782,13 +1862,19 @@ function openAdminLogin() {
   document.getElementById('adminLoginModal').classList.remove('hidden');
 }
 
-function doAdminLogin() {
+async function doAdminLogin() {
   const pin = document.getElementById('adminPinInput').value.trim();
   if (String(pin) !== String(ADMIN_PIN)) {
     showErr(document.getElementById('adminLoginError'), 'Yanlış PIN.');
     return;
   }
   document.getElementById('adminLoginModal').classList.add('hidden');
+  showLoading('Admin panel yüklənir...');
+  try {
+    await fbLoadExams();
+    await fbLoadResults();
+  } catch(e) {}
+  hideLoading();
   openAdminPanel();
 }
 
@@ -1809,7 +1895,7 @@ function switchTab(id, btn) {
   btn.classList.add('active');
 }
 
-function addExam() {
+async function addExam() {
   const name   = document.getElementById('aName').value.trim();
   const emoji  = document.getElementById('aEmoji').value.trim() || '📋';
   const qcount = parseInt(document.getElementById('aQcount').value);
@@ -1832,12 +1918,21 @@ function addExam() {
 
   const id = 'exam_' + Date.now();
   exams.push({ id, name, emoji, qcount, time, pass, diff, questions });
-  save();
+
+  showLoading('Sınav saxlanılır...');
+  try {
+    await fbSaveExams();
+  } catch(e) {
+    alert('Xəta baş verdi: ' + e.message);
+    hideLoading();
+    return;
+  }
+  hideLoading();
+
   renderAdminExamsList();
   renderResultsExamSelect();
   renderDashboard();
 
-  // clear form
   ['aName','aEmoji','aQcount','aTime','aPass','aQuestions'].forEach(id => {
     document.getElementById(id).value = '';
   });
@@ -1845,11 +1940,24 @@ function addExam() {
   alert(`✅ "${name}" sınavı əlavə edildi!`);
 }
 
-function deleteExam(examId) {
+async function deleteExam(examId) {
   if (!confirm('Bu sınavı silmək istədiyinizə əminsiniz?')) return;
   exams = exams.filter(e => e.id !== examId);
-  delete results[examId];
-  save();
+
+  // delete all results for this exam
+  const toDelete = Object.keys(results[examId] || {});
+  showLoading('Silinir...');
+  try {
+    await fbSaveExams();
+    for (const user of toDelete) {
+      await fbDeleteResult(examId, user);
+    }
+    delete results[examId];
+  } catch(e) {
+    alert('Xəta: ' + e.message);
+  }
+  hideLoading();
+
   renderAdminExamsList();
   renderResultsExamSelect();
   renderDashboard();
@@ -1866,7 +1974,7 @@ function renderAdminExamsList() {
       <div class="admin-exam-row-left">
         <span>${e.emoji}</span>
         <span>${e.name}</span>
-        <span style="color:var(--gray-600)">${(e.questions||[]).length} sual · ${e.time} dəq</span>
+        <span style="color:var(--gray-600)">${e.questions.length} sual · ${e.time} dəq</span>
       </div>
       <button class="btn-delete-exam" onclick="deleteExam('${e.id}')">Sil</button>
     </div>`).join('');
@@ -1922,12 +2030,16 @@ function toggleDetail(id) {
   document.getElementById(id).classList.toggle('open');
 }
 
-function deleteResult(examId, user) {
+async function deleteResult(examId, user) {
   if (!confirm(`${user} adlı istifadəçinin nəticəsini silmək istəyirsiniz?`)) return;
-  if (results[examId]) {
-    delete results[examId][user];
-    save();
+  showLoading('Silinir...');
+  try {
+    await fbDeleteResult(examId, user);
+    if (results[examId]) delete results[examId][user];
+  } catch(e) {
+    alert('Xəta: ' + e.message);
   }
+  hideLoading();
   loadAdminResults();
   renderDashboard();
 }
@@ -1944,15 +2056,45 @@ function escHtml(str) {
 }
 
 // ─── INIT ─────────────────────────────────────────────────────────────────────
-load();
+(async () => {
+  const savedUser = sessionStorage.getItem('xb_user');
+  if (savedUser && USERS[savedUser]) {
+    showLoading('Yüklənir...');
+    try {
+      await fbLoadExams();
+      await fbLoadResults();
+      currentUser = savedUser;
+      renderDashboard();
+      showPage('dashboardPage');
+    } catch(e) {
+      sessionStorage.removeItem('xb_user');
+    } finally {
+      hideLoading();
+    }
+  }
+})();
 
-// session restore
-const savedUser = sessionStorage.getItem('xb_user');
-if (savedUser && USERS[savedUser]) {
-  currentUser = savedUser;
-  renderDashboard();
-  showPage('dashboardPage');
-}
+// expose functions to global scope for onclick handlers
+window.doLogin = doLogin;
+window.doLogout = doLogout;
+window.goHome = goHome;
+window.openAdminLogin = openAdminLogin;
+window.doAdminLogin = doAdminLogin;
+window.closeAdminPanel = closeAdminPanel;
+window.switchTab = switchTab;
+window.addExam = addExam;
+window.deleteExam = deleteExam;
+window.openLeaderboard = openLeaderboard;
+window.startExam = startExam;
+window.prevQuestion = prevQuestion;
+window.nextQuestion = nextQuestion;
+window.submitExam = submitExam;
+window.selectSingle = selectSingle;
+window.toggleMulti = toggleMulti;
+window.selectTF = selectTF;
+window.loadAdminResults = loadAdminResults;
+window.toggleDetail = toggleDetail;
+window.deleteResult = deleteResult;
 </script>
 
 </body>
