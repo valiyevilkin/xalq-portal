@@ -1290,6 +1290,13 @@
     <button class="btn-primary" onclick="doLogin()">Giriş</button>
     <div class="login-error" id="loginError"></div>
   </div>
+
+<footer class="site-footer">
+    <div class="footer-links">
+      <!-- Gələcəkdə bura linklər əlavə olunacaq -->
+    </div>
+    <button class="theme-toggle" onclick="toggleTheme()" title="Modu dəyiş">💡</button>
+  </footer>
 </div>
 
 <!-- ═══════════════════════════════════════════
@@ -1315,6 +1322,13 @@
       <div class="empty-state" style="grid-column:1/-1">Hələ imtahan əlavə edilməyib. Admin panel vasitəsilə əlavə edin.</div>
     </div>
   </div>
+
+<footer class="site-footer">
+    <div class="footer-links">
+      <!-- Gələcəkdə bura linklər əlavə olunacaq -->
+    </div>
+    <button class="theme-toggle" onclick="toggleTheme()" title="Modu dəyiş">💡</button>
+  </footer>
 </div>
 
 <!-- ═══════════════════════════════════════════
@@ -2200,6 +2214,22 @@ function escHtml(str) {
   }
 })();
 
+// ─── THEME ────────────────────────────────────────────────────────────────────
+function toggleTheme() {
+  const isLight = document.body.classList.toggle('light');
+  localStorage.setItem('xb_theme', isLight ? 'light' : 'dark');
+  document.querySelectorAll('.theme-toggle').forEach(btn => {
+    btn.textContent = isLight ? '🌙' : '💡';
+  });
+}
+
+// tema yükle
+const savedTheme = localStorage.getItem('xb_theme');
+if (savedTheme === 'light') {
+  document.body.classList.add('light');
+  document.querySelectorAll('.theme-toggle').forEach(btn => btn.textContent = '🌙');
+}
+
 // expose functions to global scope for onclick handlers
 window.doLogin = doLogin;
 window.doLogout = doLogout;
@@ -2221,6 +2251,7 @@ window.selectTF = selectTF;
 window.loadAdminResults = loadAdminResults;
 window.toggleDetail = toggleDetail;
 window.deleteResult = deleteResult;
+window.toggleTheme = toggleTheme;
 </script>
 
 </body>
