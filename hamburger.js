@@ -1,14 +1,18 @@
-// menu.js
 document.addEventListener('DOMContentLoaded', () => {
   const hamburgerBtn = document.getElementById('hamburger-btn');
   const sideMenu = document.getElementById('side-menu');
   const closeBtn = document.getElementById('close-btn');
 
   hamburgerBtn.addEventListener('click', () => {
-    sideMenu.classList.toggle('open');
+    // Sadece mobilde aç/kapa
+    if (window.innerWidth < 1024) {
+      sideMenu.classList.toggle('open');
+    }
   });
 
   closeBtn.addEventListener('click', () => {
-    sideMenu.classList.remove('open');
+    if (window.innerWidth < 1024) {
+      sideMenu.classList.remove('open');
+    }
   });
 });
