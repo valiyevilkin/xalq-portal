@@ -1256,6 +1256,31 @@
   function gtag(){dataLayer.push(arguments);}
   gtag('js', new Date());
   gtag('config', 'G-DQ6J83QR7W');
+  function showReview() {
+    // Listi və qutuni görünür elə
+    document.getElementById('reviewContainer').style.display = 'block';
+    const errorList = document.getElementById('errorList');
+    errorList.innerHTML = ''; // İçini təmizlə
+
+    currentExam.questions.forEach((q, index) => {
+        const userAns = userAnswers[index]; // İstifadəçinin cavabı
+        
+        // əgər cavab yanlışdısa listə əlavə elə
+        if (userAns !== q.correctAnswer) {
+            const errorItem = document.createElement('div');
+            errorItem.style = "background: rgba(255,255,255,0.03); border-left: 3px solid var(--red); padding: 12px; border-radius: 6px;";
+            errorItem.innerHTML = `
+                <div style="font-size: 13px; color: var(--white); margin-bottom: 5px;"><strong>Sual:</strong> ${q.text}</div>
+                <div style="font-size: 12px; color: #ff6b7a;">❌ Sizin cavabınız: ${userAns || 'Boş buraxılıb'}</div>
+                <div style="font-size: 12px; color: #4ade80;">✅ Doğru cavab: ${q.correctAnswer}</div>
+            `;
+            errorList.appendChild(errorItem);
+        }
+    });
+    
+    // Butonu gizlə (zatən açıldı)
+    document.getElementById('btnReview').style.display = 'none';
+}
 </script>
 </head>
 <body>
@@ -1401,6 +1426,17 @@
       <div style="font-size:12px;color:var(--gray-400);margin-bottom:12px">Reytinq Cədvəli</div>
       <table class="leaderboard-table" id="resultLeaderboard"></table>
     </div>
+    <div id="reviewContainer" style="margin-top: 30px; text-align: left; display: none;">
+    <div style="font-size: 14px; color: var(--red-light); font-weight: 700; margin-bottom: 15px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 8px;">
+        Səhvlərin Təhlili:
+    </div>
+    <div id="errorList" style="display: flex; flex-direction: column; gap: 12px;">
+        </div>
+</div>
+
+<button class="btn-stats" id="btnReview" onclick="showReview()" style="margin-top: 15px; width: 100%; border-color: var(--red);">
+    Səhvlərimə Bax 🔍
+</button>
     <button class="btn-back-home" onclick="goHome()">Ana Səhifəyə Qayıt</button>
   </div>
 </div>
@@ -2047,6 +2083,8 @@ async function submitExam() {
       </tr>`).join('') + '</tbody>';
 
   showPage('resultsPage');
+document.getElementById('btnReview').style.display = 'block';
+document.getElementById('reviewContainer').style.display = 'none';
 }
 
 // ─── ADMIN ────────────────────────────────────────────────────────────────────
