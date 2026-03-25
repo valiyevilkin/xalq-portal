@@ -1,4 +1,6 @@
 /* menu.css */
+
+/* Genel side menu ayarları */
 .side-menu {
   height: 100%;
   width: 0;
@@ -12,21 +14,28 @@
   padding-top: 60px;
 }
 
+.side-menu.open {
+  width: 250px;
+}
+
 .side-menu ul {
   list-style-type: none;
   padding: 0;
+  margin: 0;
 }
 
 .side-menu ul li {
-  padding: 10px 20px;
+  padding: 12px 20px;
   color: white;
   cursor: pointer;
+  font-size: 16px;
 }
 
 .side-menu ul li:hover {
   background-color: #575757;
 }
 
+/* Kapatma butonu */
 .close-btn {
   position: absolute;
   top: 10px;
@@ -36,9 +45,39 @@
   cursor: pointer;
 }
 
+/* Hamburger butonu */
 .open-btn {
   font-size: 20px;
   cursor: pointer;
   color: black;
   padding: 10px 15px;
+  display: none; /* Başlangıçta mobilde göstereceğiz */
+}
+
+/* PC için sabit side menu */
+@media screen and (min-width: 1024px) {
+  .side-menu {
+    width: 250px;
+    padding-top: 20px;
+  }
+  .side-menu.open {
+    width: 250px; /* Açık/kapanık farkı yok */
+  }
+  .open-btn {
+    display: none;
+  }
+  body {
+    margin-left: 250px; /* Menü boşluğu bırak */
+  }
+}
+
+/* Mobil için responsive */
+@media screen and (max-width: 1023px) {
+  .open-btn {
+    display: inline-block;
+    position: fixed;
+    top: 10px;
+    left: 10px;
+    z-index: 1100;
+  }
 }
