@@ -1997,13 +1997,14 @@ async function submitExam() {
   const passed = score >= currentExam.pass;
 
  // save to Firebase
-  const alreadyHasResult = results[currentExam.id] && results[currentExam.id][currentUser];
-  if (!results[currentExam.id]) results[currentExam.id] = {};
-  results[currentExam.id][currentUser] = {
-    score, correct, wrong, time: elapsed,
-    date: new Date().toLocaleString('az-AZ'),
-    answers: answerLog
-  };
+  await fbSaveResult(currentExam.id, currentUser, {
+  score: score,
+  correct: correct,
+  wrong: wrong,
+  time: elapsed,
+  date: new Date().toLocaleString('az-AZ'),
+  answers: answerLog
+});
   showLoading('Nəticə saxlanılır...');
   try {
     if (!alreadyHasResult) {
