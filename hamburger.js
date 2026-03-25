@@ -1,18 +1,16 @@
 document.addEventListener('DOMContentLoaded', () => {
-  const hamburgerBtn = document.getElementById('hamburger-btn');
-  const sideMenu = document.getElementById('side-menu');
-  const closeBtn = document.getElementById('close-btn');
+const hamburgerBtn = document.getElementById('hamburger-btn');
+const sideMenu = document.getElementById('side-menu');
+const closeBtn = document.getElementById('close-btn');
 
-  hamburgerBtn.addEventListener('click', () => {
-    // Sadece mobilde aç/kapa
-    if (window.innerWidth < 1024) {
-      sideMenu.classList.toggle('open');
-    }
-  });
-
+// Sadece mobil için X tuşu çalışacak
+if (window.innerWidth < 1024) {
   closeBtn.addEventListener('click', () => {
-    if (window.innerWidth < 1024) {
-      sideMenu.classList.remove('open');
-    }
+    sideMenu.classList.remove('open');
   });
+}
+
+hamburgerBtn.addEventListener('click', () => {
+  sideMenu.classList.toggle('open');
+});
 });
