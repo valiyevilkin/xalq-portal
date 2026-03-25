@@ -60,14 +60,15 @@
     width: 250px;
     padding-top: 20px;
   }
-  .side-menu.open {
-    width: 250px; /* Açık/kapanık farkı yok */
-  }
+
+  /* .side-menu.open hələ ki lazım deyil. Sürüşən menu olsa burda dəyişiklik olacaq. */
+
   .open-btn {
-    display: none;
+    display: none; /* Hamburger ikonunu gizlə */
   }
+
   body {
-    margin-left: 250px; /* Menü boşluğu bırak */
+    margin-left: 250px; /* Menüu sahəsi üçün boşluq saxla */
   }
 }
 
