@@ -1238,7 +1238,7 @@
     border-color: var(--red);
     transform: scale(1.1);
   }
-  
+
   /* ─── RESULT DETAILS (CAVAB ANALİZİ) ───────── */
 .result-detail-item {
   border-bottom: 1px solid rgba(255,255,255,0.06);
@@ -1901,7 +1901,7 @@ function renderQuestion() {
   let optionsHTML = '';
 
   if (q.type === 'single') {
-    const keys = ['A', 'B', 'C', 'D'];
+    const keys = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
     optionsHTML = `<div class="options-list">` +
       q.opts.map((opt, i) => `
         <div class="option-item ${userAnswers[currentQIdx] === i ? 'selected' : ''}"
@@ -1911,7 +1911,7 @@ function renderQuestion() {
         </div>`).join('') + `</div>`;
   } else if (q.type === 'multi') {
     const sel = userAnswers[currentQIdx] || [];
-    const keys = ['A', 'B', 'C', 'D'];
+    const keys = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
     optionsHTML = `<div style="font-size:11px;color:var(--gray-400);margin-bottom:10px">Bir neçə cavab seçə bilərsiniz</div>
       <div class="options-list">` +
       q.opts.map((opt, i) => `
