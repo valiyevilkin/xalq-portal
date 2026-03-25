@@ -1996,7 +1996,8 @@ async function submitExam() {
   const score = Math.round((correct / questions.length) * 100);
   const passed = score >= currentExam.pass;
 
-  // save to Firebase
+ // save to Firebase
+  const alreadyHasResult = results[currentExam.id] && results[currentExam.id][currentUser];
   if (!results[currentExam.id]) results[currentExam.id] = {};
   results[currentExam.id][currentUser] = {
     score, correct, wrong, time: elapsed,
@@ -2005,7 +2006,6 @@ async function submitExam() {
   };
   showLoading('Nəticə saxlanılır...');
   try {
-    const alreadyHasResult = results[currentExam.id] && results[currentExam.id][currentUser];
     if (!alreadyHasResult) {
       await fbSaveResult(currentExam.id, currentUser, {
         score, correct, wrong, time: elapsed,
