@@ -1276,6 +1276,57 @@
   function gtag(){dataLayer.push(arguments);}
   gtag('js', new Date());
   gtag('config', 'G-DQ6J83QR7W');
+
+  async function downloadPDF(examId) {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+
+  const exam = exams.find(e => e.id === examId);
+  if (!exam) return;
+
+  let y = 10;
+
+  // Başlık
+  doc.setFontSize(16);
+  doc.text(exam.name, 10, y);
+  y += 10;
+
+  doc.setFontSize(11);
+
+  exam.questions.forEach((q, i) => {
+    // Sayfa dolduysa yeni sayfa
+    if (y > 270) {
+      doc.addPage();
+      y = 10;
+    }
+
+    doc.text(`${i + 1}. ${q.q}`, 10, y);
+    y += 6;
+
+    if (q.type === 'single' || q.type === 'multi') {
+      const letters = ['A','B','C','D','E','F','G','H'];
+
+      q.opts.forEach((opt, idx) => {
+        doc.text(`${letters[idx]}) ${opt}`, 15, y);
+        y += 5;
+      });
+
+    } else if (q.type === 'tf') {
+      doc.text(`A) Doğru`, 15, y);
+      y += 5;
+      doc.text(`B) Yanlış`, 15, y);
+      y += 5;
+
+    } else if (q.type === 'text') {
+      doc.text(`Cavab: ________________________`, 15, y);
+      y += 8;
+    }
+
+    y += 4;
+  });
+
+  doc.save(`${exam.name}.pdf`);
+}
 </script>
 <link rel="stylesheet" href="hamburger.css">
 <!-- Favicon şəkli -->
@@ -1808,6 +1859,7 @@ function renderDashboard() {
       </div>
       <div class="card-actions">
         <button class="btn-stats" onclick="openLeaderboard('${exam.id}')">📊 Reytinq cədvəli</button>
+        <button class="btn-stats" onclick="downloadPDF('${exam.id}')">📥 PDF</button>
         ${done
   ? `
     <button class="btn-start" onclick="viewResult('${exam.id}')">📄 Nəticəyə bax</button>
@@ -2387,6 +2439,7 @@ window.selectTF = selectTF;
 window.loadAdminResults = loadAdminResults;
 window.toggleDetail = toggleDetail;
 window.deleteResult = deleteResult;
+window.downloadPDF = downloadPDF;
 
 function viewResult(examId) {
   const exam = exams.find(e => e.id === examId);
@@ -2472,6 +2525,6 @@ window.openChangePin = openChangePin;
 window.doChangePin = doChangePin;
 window.toggleTheme = toggleTheme;
 </script>
-
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </body>
 </html>
