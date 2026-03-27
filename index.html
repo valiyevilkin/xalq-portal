@@ -1282,6 +1282,7 @@
   <link rel="icon" type="image/png" href="images/favicon-32x32.png">
   
 </head>
+<script src="yazi_tipleri/Arial-normal.js"></script>
 <body>
   <!-- Hamburger butonu -->
 <span id="hamburger-btn" class="open-btn">&#9776;</span>
@@ -2474,7 +2475,8 @@ async function doChangePin() {
 async function downloadPDF(examId) {
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF();
-
+  doc.setLineHeightFactor(1.3);
+doc.setFont('Arial-Regular', 'normal');
   const exam = exams.find(e => e.id === examId);
   if (!exam) return;
 
@@ -2492,14 +2494,17 @@ async function downloadPDF(examId) {
       y = 10;
     }
 
-    doc.text(`${i + 1}. ${q.q}`, 10, y);
-    y += 6;
+   const questionLines = doc.splitTextToSize(`${i + 1}. ${q.q}`, 180);
+    doc.text(questionLines, 10, y);
+    y += questionLines.length * 6;    y += 6;
 
     if (q.type === 'single' || q.type === 'multi') {
       const letters = ['A','B','C','D','E','F','G','H'];
 
       q.opts.forEach((opt, idx) => {
-        doc.text(`${letters[idx]}) ${opt}`, 15, y);
+        const optLines = doc.splitTextToSize(`${letters[idx]}) ${opt}`, 170);
+doc.text(optLines, 15, y);
+y += optLines.length * 5;
         y += 5;
       });
 
