@@ -1451,7 +1451,7 @@
     <button class="btn-back-home" onclick="goHome()">Ana Səhifəyə Qayıt</button>
   </div>
 </div>
-
+<div id="resultDetails"></div>
 <!-- ═══════════════════════════════════════════
      BLOCKED PAGE
 ═══════════════════════════════════════════ -->
@@ -1809,9 +1809,12 @@ function renderDashboard() {
       <div class="card-actions">
         <button class="btn-stats" onclick="openLeaderboard('${exam.id}')">📊 Reytinq cədvəli</button>
         ${done
-          ? `<button class="btn-start" onclick="startExam('${exam.id}')">🔄 Yenidən</button>`
-          : `<button class="btn-start" onclick="startExam('${exam.id}')">▶ İmtahana Başla</button>`
-        }
+  ? `
+    <button class="btn-start" onclick="viewResult('${exam.id}')">📄 Nəticəyə bax</button>
+    <button class="btn-start" onclick="startExam('${exam.id}')">🔄 Yenidən</button>
+  `
+  : `<button class="btn-start" onclick="startExam('${exam.id}')">▶ İmtahana Başla</button>`
+}
       </div>
     </div>`;
   }).join('');
@@ -2377,12 +2380,53 @@ window.startExam = startExam;
 window.prevQuestion = prevQuestion;
 window.nextQuestion = nextQuestion;
 window.submitExam = submitExam;
+window.viewResult = viewResult;
 window.selectSingle = selectSingle;
 window.toggleMulti = toggleMulti;
 window.selectTF = selectTF;
 window.loadAdminResults = loadAdminResults;
 window.toggleDetail = toggleDetail;
 window.deleteResult = deleteResult;
+
+function viewResult(examId) {
+  const exam = exams.find(e => e.id === examId);
+  const r = results[examId] && results[examId][currentUser];
+
+  if (!exam || !r) return;
+
+  // üst info
+  document.getElementById('resScore').textContent = r.score + '%';
+  document.getElementById('resCorrect').textContent = r.correct;
+  document.getElementById('resWrong').textContent = r.wrong;
+  document.getElementById('resTime').textContent = fmtTime(r.time);
+
+  document.getElementById('resultTitle').textContent = exam.name;
+  document.getElementById('resultSubtitle').textContent =
+    `${currentUser} · ${exam.questions.length} sual · Keçmə notu: ${exam.pass}%`;
+
+  // PASS / FAIL
+  const passed = r.score >= exam.pass;
+  document.getElementById('resultPassFail').innerHTML = passed
+    ? `<div class="result-pass">✅ İmtahandan uğurla keçdiniz!</div>`
+    : `<div class="result-fail">❌ İmtahandan keçə bilmədiniz.</div>`;
+
+  document.getElementById('resultIcon').textContent = passed ? '🏆' : '📋';
+
+  // 🔥 DETAYLAR
+  const detailHTML = (r.answers || []).map((a, i) => `
+    <div style="margin-bottom:12px;padding:10px;border-bottom:1px solid #333">
+      <div><b>${i + 1}. ${a.q}</b></div>
+      <div>Sənin cavabın: ${a.given}</div>
+      <div style="color:${a.correct ? '#4ade80' : '#ff6b7a'}">
+        ${a.correct ? '✓ Doğru' : '✗ Yanlış'}
+      </div>
+    </div>
+  `).join('');
+
+  document.getElementById('resultDetails').innerHTML = detailHTML;
+
+  showPage('resultsPage');
+}
 
 // ─── PIN DEYİŞ ────────────────────────────────────────────────────────────────
 function openChangePin() {
